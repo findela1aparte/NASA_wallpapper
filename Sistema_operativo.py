@@ -12,4 +12,6 @@ if so == "posix":
 elif so == "nt":
     print("Tu sistema operativo es Windows")
 elif so == "mac":
-    print("Tu sistema operativo es Mac")    
+    print("Tu sistema operativo es Mac")  
+
+#Comentario  
