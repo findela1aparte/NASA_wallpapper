@@ -5,6 +5,7 @@ import shutil #Es para poder copiar la imágen descargada a otro directorio y as
 from pathlib import Path #Para poder crear rutas de archivos
 import random
 from tkinter import *
+from PIL import ImageTk,Image #Importamos este módulo para poder trabajar con imágenes dentro de TKinter.
 
 
 # Tenemos que colocar esta variable de entorno para que pueda funcionar el comando Crontab
@@ -104,6 +105,13 @@ etiqueta_titulo= Label(panel_superior,#Donde anidarlo
 # Colocamos el frame etiqueta_titulo en la fila 0 y columna 0
 etiqueta_titulo.grid(row=0, column=0)
 
+# Redimensionamos la imagen antes de convertirla a PhotoImage
+imagen = Image.open('/home/ignacio/fotos_NASA/apod.jpg')
+imagen_redimensionada = imagen.resize((150, 100))  # Redimensionar la imagen
+imagen_descargada = ImageTk.PhotoImage(imagen_redimensionada)  # Convertir la imagen redimensionada
+prew_imagen = Label(image=imagen_descargada)
+prew_imagen.pack()
+
 # Creamos un panel infrior donde colocaremos el botón
 panel_inferior= Frame(aplicacion, bd=0, relief=GROOVE)
 panel_inferior.pack(side=BOTTOM)
@@ -128,7 +136,8 @@ boton_play.config(command=nasa)
 
     # Una vez descargada la imágen, esta sentencia le dice al SO que coloque como wallpaper el archivo indicado en la dirección de abajo
     # Este comando sólo sirve para Gnome, para otro entorno deberíamos buscar la manera de hacerlo.
-os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio//fotos_NASA/apod.jpg'")
+def aplicar_wallpapper():
+    os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio//fotos_NASA/apod.jpg'")
 
 aplicacion.mainloop()
 
