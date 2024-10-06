@@ -1,0 +1,16 @@
+Para automatizar el script de python tenemos que decirselo a Cronlab.
+Para ello lo primero que tenemos que hacer es buscar la variable de entrorno llamada DBUS_SESSION_BUS_ADDRESS para añadírsela al script de python.
+para ello ponemos en la terminal:  printenv | grep DBUS
+y el resultado similar a este: DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus lo añadimos al inicio.
+de esta forma: os.environ["DBUS_SESSION_BUS_ADDRESS"]="unix:path=/run/user/1001/bus,guid=552ef0db6eb70d8d9c46163765ae55af"
+
+después abrimos Cronlab en la terminal con cronlab -e   y añadimos una linea
+
+# m h  dom mon dow   command
+m: minutos (0-59) *=cada minuto
+h: horas (0-23) *=cada hora
+dom: dia del mes (0-31) *=cada día
+mon: día de cada mes (0-12) *=todos los meses
+dow: dia de la semana (0-6) o poner su abreviatura en inglés 
+command: la ruta hacia el archivo que automatizar
+
