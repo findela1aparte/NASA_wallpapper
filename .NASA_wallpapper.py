@@ -58,7 +58,7 @@ def nasa():
 aplicacion = Tk()
 
 # Creamos la ventana, le damos medidas en px y posición de salida.
-aplicacion.geometry ('500x300+100+100')
+aplicacion.geometry ('750x450+100+100')
 
 # Con este comando impedimos que la ventana se pueda expandir o contraer por el usuario
 aplicacion.resizable (0,0)
@@ -107,10 +107,10 @@ etiqueta_titulo.grid(row=0, column=0)
 
 # Redimensionamos la imagen antes de convertirla a PhotoImage
 imagen = Image.open('/home/ignacio/fotos_NASA/apod.jpg')
-imagen_redimensionada = imagen.resize((150, 100))  # Redimensionar la imagen
+imagen_redimensionada = imagen.resize((300, 200))  # Redimensionar la imagen
 imagen_descargada = ImageTk.PhotoImage(imagen_redimensionada)  # Convertir la imagen redimensionada
 prew_imagen = Label(image=imagen_descargada)
-prew_imagen.pack()
+prew_imagen.pack(padx=20, pady=20)
 
 # Creamos un panel infrior donde colocaremos el botón
 panel_inferior= Frame(aplicacion, bd=0, relief=GROOVE)
