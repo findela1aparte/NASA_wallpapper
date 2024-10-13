@@ -62,7 +62,8 @@ def nasa():
  # Una vez descargada la imágen, esta sentencia le dice al SO que coloque como wallpaper el archivo indicado en la dirección de abajo
     # Este comando sólo sirve para Gnome, para otro entorno deberíamos buscar la manera de hacerlo.
 def aplicar_wallpapper():
-    os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio/fotos_NASA/apod.jpg'")
+    shutil.copy("/home/ignacio/fotos_NASA/apod.jpg","/home/ignacio/fotos_NASA/apod2.jpg") #Copia la imágen desgargada y le cambia el nombre a apod2.jpg para evitar que la descarga cambie automáticamente el salvapantallas.
+    os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio/fotos_NASA/apod2.jpg'")
 
 # Ejecutamos la aplicación Tkinter, al final del programa tenemos que poner un comando para que no se cierre la ventana
 aplicacion = Tk()
