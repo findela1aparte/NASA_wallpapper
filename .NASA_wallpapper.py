@@ -30,6 +30,16 @@ def nasa():
     if r.status_code == 200:
         results = r.json()
         url = results["url"]
+        global titulo, autores, explicacion, video, foto_sustituta, texto_pantalla, dia, mes, anyo
+        titulo = results["title"]
+        autores = results["copyright"]
+        explicacion = results["explanation"]
+        video= FALSE
+        texto_pantalla= (f"Título: {titulo}/nAutor: {autores}/n{explicacion}")
+        diccionario_meses= {"01":"Enero","02":"Febrero","03":"Marzo",
+                            "04":"Abril","05":"Mayo","06":"Junio",
+                            "07":"Julio","08":"Agosto","09":"Septiembre",
+                            "10":"Octubre","11":"Noviembre","12":"Diciembre"}
         
         
         # Si es una imagen, guardar el archivo con el nombre apod.jpg, El archivo se guarda en la raiz.
@@ -47,17 +57,25 @@ def nasa():
             shutil.copy("/home/ignacio/fotos_NASA/apod.jpg", ruta_destino)
         # Si el archivo recibido es un vídeo (cosa que no creo que suceda) imprimiría la url en la terminal.
         else:
+            video= True
             # Elegir una imágen aleatoria de la carpeta de la base de datos
             aleatorio= os.listdir('/home/ignacio/fotos_NASA') #Crea una lista con los archivos de la carpeta especificada
             foto_sustituta= random.choice(aleatorio) #Elige un elemento aleatorio de la lista indicada
             origen= Path("/home/ignacio/fotos_NASA").joinpath(foto_sustituta) #Crea una ruta con el directorio de las fotos y el archivo elegido aleatoriamente
             shutil.copy(origen ,"/home/ignacio/fotos_NASA/apod.jpg") #Copia la imágen afortunada en el archivo raíz con el nompre apod.jpg que luego subira como salvapantallas
-            print(f"Hoy no hay 'Pic of the day', se ha colocado la imágen del {foto_sustituta}")
-        
+            fecha_completa= str(foto_sustituta)
+            dia= fecha_completa[8:10]
+            mes= fecha_completa[5:7]
+            anyo= fecha_completa[0:4]
+            texto_pantalla= (f"Hoy no hay 'Pic of the day', pero te sugerimos la foto del {dia} de {(diccionario_meses[mes])} de {anyo}.")
+            
     # Si no hay una respuesta correcta de la API imprimiría en la terminal el siguiente texto.        
     else:
         print("No se pudo obtener la imagen.")
-
+    fecha_completa= str(foto_sustituta)
+    dia= fecha_completa[8:10]
+    mes= fecha_completa[5:7]
+    anyo= fecha_completa[0:4]
 
  # Una vez descargada la imágen, esta sentencia le dice al SO que coloque como wallpaper el archivo indicado en la dirección de abajo
     # Este comando sólo sirve para Gnome, para otro entorno deberíamos buscar la manera de hacerlo.
@@ -123,7 +141,8 @@ panel_medio.pack(side=TOP)
 
 # Introducimos el formato del texto del título.
 etiqueta_texto= Label(panel_medio,#Donde anidarlo
-                       text='Esta es la foto de hoy', #Texto a mostrar
+                       wraplength=350, # Longitud de envoltura en píxeles (se adapta a este ancho)
+                       text= texto_pantalla, #Texto a mostrar
                        fg='White', #Color del texto
                        font=('Dosis', 15), #Tipografía y tamaño de letra
                        bg='MediumBLue',
@@ -154,6 +173,8 @@ boton_play= Button (panel_inferior, #Dónde anidamos el botón
                      bg='red', #Color del fondo del botón
                      bd=1, #Borde del botón
                      width=10, #Altura del botón
+                     padx=10, 
+                     pady=10,
                      command=aplicar_wallpapper) # Al presionar el botón se activará la función aplicar_wallpapper
 
 boton_play.grid(row=0, column=0)
