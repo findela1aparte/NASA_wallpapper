@@ -11,6 +11,9 @@ from PIL import ImageTk,Image #Importamos este módulo para poder trabajar con i
 # Tenemos que colocar esta variable de entorno para que pueda funcionar el comando Crontab
 os.environ["DBUS_SESSION_BUS_ADDRESS"]="unix:path=/run/user/1001/bus,guid=552ef0db6eb70d8d9c46163765ae55af"
 
+
+
+
 def nasa():
     # Creamos una variable para poder almacenar la api_key de NASA. NASA nos permite usar su api sin key 30 veces por hora, 50 veces al día
     # como sólo vamos a acceder una vez al día no será necesario solicitar una API, pero si la tuviéramos deberíamos cambiarla por DEMO_KEY
@@ -20,7 +23,7 @@ def nasa():
 
     # En la variable r vamos a guardar la llamada a la API de la NASA, si la conexión es correcta nos devolverá un 200
     # Qué es paramas=params
-    r = requests.get("https://api.nasa.gov/planetary/apod", params=params)
+    r= requests.get("https://api.nasa.gov/planetary/apod", params=params)
 
     # Si la respuesta de la api es correcta (200) la guardamos en la variable "results" indicando que es formato json
     # y en la variable url la direccion de la foto
@@ -54,6 +57,13 @@ def nasa():
     # Si no hay una respuesta correcta de la API imprimiría en la terminal el siguiente texto.        
     else:
         print("No se pudo obtener la imagen.")
+
+
+ # Una vez descargada la imágen, esta sentencia le dice al SO que coloque como wallpaper el archivo indicado en la dirección de abajo
+    # Este comando sólo sirve para Gnome, para otro entorno deberíamos buscar la manera de hacerlo.
+def aplicar_wallpapper():
+    os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio/fotos_NASA/apod.jpg'")
+
 # Ejecutamos la aplicación Tkinter, al final del programa tenemos que poner un comando para que no se cierre la ventana
 aplicacion = Tk()
 
@@ -69,26 +79,17 @@ aplicacion.title ("Wallpapper Pic of the day")
 # Configuramos el color de fondo de la aplicación
 aplicacion.config (bg='MediumBlue')
 
-# Creamos un frame y le indicamos dónde se va a anidar, el grosor del borde y el tipo de borde
-# Este frame es para dejar una línea entre el borde de la ventana y el título
-hueco_superior= Frame(aplicacion, bd=0, relief=GROOVE)
 
-# Colocamos el frame hueco_superior en la parte superior
-hueco_superior.pack(side=TOP)
+nasa()
 
-# Le introducimos el formato del texto que irá en el hueco, pero como queremos el hueco vacío dejamos el trxto vacío
-hueco_titulo= Label(hueco_superior,
-                       text='',
-                       fg='MediumBlue',
-                       font=('Dosis', 5),
-                       bg='MediumBLue',
-                       width=5)
-
-# Colocamos en frame hueco_titulo en la fila 0 y columna 0
-hueco_titulo.grid(row=0, column=0)
 
 # Creamos un frame y le indicamos dónde se va a anidar, el grosor del borde y el tipo de borde
-panel_superior= Frame(aplicacion, bd=2, relief=GROOVE)
+panel_superior= Frame(aplicacion,
+                      bd=0, 
+                      relief=GROOVE,
+                      padx=10, 
+                      pady=10,
+                      bg='MediumBLue') # Color de fondo
 
 # Colocamos el frame hueco_superior en la parte superior, como ya hay un frame que hemos puesto en la parte
 # superior, este se situará justo debajo del anterior.
@@ -101,10 +102,12 @@ etiqueta_titulo= Label(panel_superior,#Donde anidarlo
                        font=('Dosis', 20), #Tipografía y tamaño de letra
                        bg='MediumBLue', # Color de fondo
                        width=20) #Altura del frame donde irá el texto
+                        
 
 # Colocamos el frame etiqueta_titulo en la fila 0 y columna 0
 etiqueta_titulo.grid(row=0, column=0)
 
+# Colocamos una previsualización de la imágen del día
 # Redimensionamos la imagen antes de convertirla a PhotoImage
 imagen = Image.open('/home/ignacio/fotos_NASA/apod.jpg')
 imagen_redimensionada = imagen.resize((300, 200))  # Redimensionar la imagen
@@ -124,21 +127,17 @@ boton_play= Button (panel_inferior, #Dónde anidamos el botón
                      fg='White', #Color del texto del botón
                      bg='red', #Color del fondo del botón
                      bd=1, #Borde del botón
-                     width=10) #Altura del botón
+                     width=10, #Altura del botón
+                     command=aplicar_wallpapper) # Al presionar el botón se activará la función aplicar_wallpapper
 
 boton_play.grid(row=0, column=0)
 
-boton_play.config(command=nasa)
 
 
 #nasa()
 
 
-    # Una vez descargada la imágen, esta sentencia le dice al SO que coloque como wallpaper el archivo indicado en la dirección de abajo
-    # Este comando sólo sirve para Gnome, para otro entorno deberíamos buscar la manera de hacerlo.
-def aplicar_wallpapper():
-    os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio//fotos_NASA/apod.jpg'")
-
+   
 aplicacion.mainloop()
 
 # https://coffeebytes.dev/como-crear-un-cambiador-de-wallpaper-automatico-usando-python-en-gnome/
