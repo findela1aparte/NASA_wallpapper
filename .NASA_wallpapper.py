@@ -94,7 +94,7 @@ panel_superior= Frame(aplicacion,
 
 # Colocamos el frame hueco_superior en la parte superior, como ya hay un frame que hemos puesto en la parte
 # superior, este se situará justo debajo del anterior.
-panel_superior.pack(side=TOP)
+panel_superior.pack(side=TOP) 
 
 # Introducimos el formato del texto del título.
 etiqueta_titulo= Label(panel_superior,#Donde anidarlo
@@ -108,13 +108,38 @@ etiqueta_titulo= Label(panel_superior,#Donde anidarlo
 # Colocamos el frame etiqueta_titulo en la fila 0 y columna 0
 etiqueta_titulo.grid(row=0, column=0)
 
+# Creamos un frame y le indicamos dónde se va a anidar, el grosor del borde y el tipo de borde
+panel_medio= Frame(aplicacion,
+                      bd=0, 
+                      relief=GROOVE,
+                      padx=10, 
+                      pady=10,
+                      bg='MediumBLue') # Color de fondo
+
+# Colocamos el frame hueco_superior en la parte superior, como ya hay un frame que hemos puesto en la parte
+# superior, este se situará justo debajo del anterior.
+panel_medio.pack(side=TOP) 
+
+
+# Introducimos el formato del texto del título.
+etiqueta_texto= Label(panel_medio,#Donde anidarlo
+                       text='Esta es la foto de hoy', #Texto a mostrar
+                       fg='White', #Color del texto
+                       font=('Dosis', 15), #Tipografía y tamaño de letra
+                       bg='MediumBLue',
+                       padx=10, 
+                       pady=10) # Color de fondo
+
+# Colocamos el frame etiqueta_titulo en la fila 0 y columna 0
+etiqueta_texto.pack(side=LEFT)# Alineación a la izquierda
+
 # Colocamos una previsualización de la imágen del día
 # Redimensionamos la imagen antes de convertirla a PhotoImage
 imagen = Image.open('/home/ignacio/fotos_NASA/apod.jpg')
 imagen_redimensionada = imagen.resize((300, 200))  # Redimensionar la imagen
 imagen_descargada = ImageTk.PhotoImage(imagen_redimensionada)  # Convertir la imagen redimensionada
-prew_imagen = Label(image=imagen_descargada)
-prew_imagen.pack(padx=20, pady=20)
+prew_imagen = Label(panel_medio, image=imagen_descargada)
+prew_imagen.pack(side=RIGHT,padx=10, pady=10)
 
 # Creamos un panel infrior donde colocaremos el botón
 panel_inferior= Frame(aplicacion, bd=0, relief=GROOVE)
