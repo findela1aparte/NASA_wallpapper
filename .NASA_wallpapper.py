@@ -11,7 +11,7 @@ from PIL import ImageTk,Image #Importamos este módulo para poder trabajar con i
 # Tenemos que colocar esta variable de entorno para que pueda funcionar el comando Crontab
 os.environ["DBUS_SESSION_BUS_ADDRESS"]="unix:path=/run/user/1001/bus,guid=552ef0db6eb70d8d9c46163765ae55af"
 
-
+imagen_descargada = ""
 
 
 def nasa():
@@ -30,12 +30,12 @@ def nasa():
     if r.status_code == 200:
         results = r.json()
         url = results["url"]
-        global titulo, autores, explicacion, video, foto_sustituta, texto_pantalla, dia, mes, anyo
+        global titulo, autores, explicacion, video, foto_sustituta, texto_pantalla, dia, mes, anyo, diccionario_meses
         titulo = results["title"]
         autores = results["copyright"]
         explicacion = results["explanation"]
         video= FALSE
-        texto_pantalla= (f"Título: {titulo}/nAutor: {autores}/n{explicacion}")
+        texto_pantalla= (f"Título: {titulo}\nAutor: {autores} \n{explicacion}")
         diccionario_meses= {"01":"Enero","02":"Febrero","03":"Marzo",
                             "04":"Abril","05":"Mayo","06":"Junio",
                             "07":"Julio","08":"Agosto","09":"Septiembre",
@@ -57,31 +57,79 @@ def nasa():
             shutil.copy("/home/ignacio/fotos_NASA/apod.jpg", ruta_destino)
         # Si el archivo recibido es un vídeo (cosa que no creo que suceda) imprimiría la url en la terminal.
         else:
+            
             video= True
             # Elegir una imágen aleatoria de la carpeta de la base de datos
             aleatorio= os.listdir('/home/ignacio/fotos_NASA') #Crea una lista con los archivos de la carpeta especificada
             foto_sustituta= random.choice(aleatorio) #Elige un elemento aleatorio de la lista indicada
+            while not foto_sustituta.startswith('2'):  # Repetimos mientras no empiece por '2'
+                foto_sustituta = random.choice(aleatorio)  # Elegimos otra imagen
             origen= Path("/home/ignacio/fotos_NASA").joinpath(foto_sustituta) #Crea una ruta con el directorio de las fotos y el archivo elegido aleatoriamente
             shutil.copy(origen ,"/home/ignacio/fotos_NASA/apod.jpg") #Copia la imágen afortunada en el archivo raíz con el nompre apod.jpg que luego subira como salvapantallas
             fecha_completa= str(foto_sustituta)
             dia= fecha_completa[8:10]
-            mes= fecha_completa[5:7]
+            mes= str(fecha_completa[5:7])
             anyo= fecha_completa[0:4]
             texto_pantalla= (f"Hoy no hay 'Pic of the day', pero te sugerimos la foto del {dia} de {(diccionario_meses[mes])} de {anyo}.")
             
     # Si no hay una respuesta correcta de la API imprimiría en la terminal el siguiente texto.        
     else:
         print("No se pudo obtener la imagen.")
-    fecha_completa= str(foto_sustituta)
+    fecha_completa= ""
     dia= fecha_completa[8:10]
     mes= fecha_completa[5:7]
     anyo= fecha_completa[0:4]
+
+def aleatoria():
+    video = True
+    numero = True
+    global texto_pantalla
+    # Elegir una imagen aleatoria de la carpeta de la base de datos
+    aleatorio = os.listdir('/home/ignacio/fotos_NASA')  # Crea una lista con los archivos de la carpeta especificada
+
+    # Bucle para asegurarse de que la imagen elegida comience con '2'
+    foto_sustituta = random.choice(aleatorio)  # Elegimos una primera opción
+    while not foto_sustituta.startswith('2'):  # Repetimos mientras no empiece por '2'
+        foto_sustituta = random.choice(aleatorio)  # Elegimos otra imagen
+
+    # Ahora que tenemos una imagen que cumple la condición, continuamos
+    origen = Path("/home/ignacio/fotos_NASA").joinpath(foto_sustituta)  # Crea una ruta con el archivo elegido
+    shutil.copy(origen, "/home/ignacio/fotos_NASA/apod.jpg")  # Copiamos la imagen elegida
+
+    # Extraer fecha del nombre del archivo (suponiendo que el nombre es YYYY-MM-DD.jpg)
+    fecha_completa = str(foto_sustituta)  # Convertimos a cadena
+    dia = fecha_completa[8:10]  # Extraemos el día
+    mes = str(fecha_completa[5:7])  # Extraemos el mes
+    anyo = fecha_completa[0:4]  # Extraemos el año
+
+    # Diccionario de meses para convertir el mes numérico a nombre
+    diccionario_meses = {
+        "01": "enero", "02": "febrero", "03": "marzo", "04": "abril", 
+        "05": "mayo", "06": "junio", "07": "julio", "08": "agosto", 
+        "09": "septiembre", "10": "octubre", "11": "noviembre", "12": "diciembre"
+    }
+
+    refrescar_contenido()
 
  # Una vez descargada la imágen, esta sentencia le dice al SO que coloque como wallpaper el archivo indicado en la dirección de abajo
     # Este comando sólo sirve para Gnome, para otro entorno deberíamos buscar la manera de hacerlo.
 def aplicar_wallpapper():
     shutil.copy("/home/ignacio/fotos_NASA/apod.jpg","/home/ignacio/fotos_NASA/apod2.jpg") #Copia la imágen desgargada y le cambia el nombre a apod2.jpg para evitar que la descarga cambie automáticamente el salvapantallas.
     os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio/fotos_NASA/apod2.jpg'")
+
+def refrescar_contenido():
+    # Actualizamos el texto
+    # Aquí pones el código que actualiza el texto de `texto_pantalla`
+    
+    # Actualizamos la imagen
+    global imagen_descargada
+    imagen_nueva = Image.open('/home/ignacio/fotos_NASA/apod.jpg')
+    imagen_redimensionada = imagen_nueva.resize((300, 200))  # Redimensionar la imagen
+    imagen_descargada = ImageTk.PhotoImage(imagen_redimensionada)  # Convertir la imagen redimensionada
+
+    # Refrescar el texto de la etiqueta
+    etiqueta_texto.config(text=texto_pantalla)
+
 
 # Ejecutamos la aplicación Tkinter, al final del programa tenemos que poner un comando para que no se cierre la ventana
 aplicacion = Tk()
@@ -134,20 +182,33 @@ panel_medio= Frame(aplicacion,
                       pady=10,
                       bg='MediumBLue') # Color de fondo
 
-# Colocamos el frame hueco_superior en la parte superior, como ya hay un frame que hemos puesto en la parte
-# superior, este se situará justo debajo del anterior.
+# Le decimos que se coloque en la parte superio, pero por jerarquía se colocará después del que ya hay.
 panel_medio.pack(side=TOP) 
 
+"""   OPCIÓN CON BARRA LATERAL HORRIBLE!!!
+# Crear el widget Text con la opción de altura para controlar cuántas líneas se ven (en este caso 10 líneas)
+texto_largo = Text(panel_medio, wrap=WORD, height=10, width=10, font=('Dosis', 12), bg='LightBlue', fg='White')
+texto_largo.insert(END, texto_pantalla)  # Insertar el texto
+texto_largo.config(state=DISABLED)  # Para que el usuario no pueda modificar el texto
+texto_largo.pack(side=LEFT, fill=BOTH, expand=True)
 
-# Introducimos el formato del texto del título.
+# Crear un Scrollbar (barra de desplazamiento) vertical y asociarlo al widget Text
+scrollbar = Scrollbar(panel_medio, orient=VERTICAL, command=texto_largo.yview)
+scrollbar.pack(side=LEFT, fill=BOTH)
+
+# Asociar la scrollbar al widget Text
+texto_largo.config(yscrollcommand=scrollbar.set)
+"""
+#Introducimos el formato del texto del título.
 etiqueta_texto= Label(panel_medio,#Donde anidarlo
                        wraplength=350, # Longitud de envoltura en píxeles (se adapta a este ancho)
+                       justify=LEFT, # Justifica el texto a la izquierda, por defecto viene centrado.
                        text= texto_pantalla, #Texto a mostrar
                        fg='White', #Color del texto
-                       font=('Dosis', 15), #Tipografía y tamaño de letra
-                       bg='MediumBLue',
+                       font=('Dosis', 10), #Tipografía y tamaño de letra
+                       bg='MediumBLue', # Color de fondo
                        padx=10, 
-                       pady=10) # Color de fondo
+                       pady=10) 
 
 # Colocamos el frame etiqueta_titulo en la fila 0 y columna 0
 etiqueta_texto.pack(side=LEFT)# Alineación a la izquierda
@@ -165,7 +226,21 @@ panel_inferior= Frame(aplicacion, bd=0, relief=GROOVE)
 panel_inferior.pack(side=BOTTOM)
 #panel_inferior.grid(row=0, column=0)
 
-# Creamos un botón
+# Creamos un botón para refrescar
+boton_play= Button (panel_inferior, #Dónde anidamos el botón
+                     text= 'Otra', #Texto que pondrá en el botón
+                     font=('Dosis', 14, 'bold'), #Fuente del texto del botón y tamaño de letra
+                     fg='White', #Color del texto del botón
+                     bg='red', #Color del fondo del botón
+                     bd=1, #Borde del botón
+                     width=12, #Altura del botón
+                     padx=10, 
+                     pady=10,
+                     command=aleatoria) # Al presionar el botón se activará la función aplicar_wallpapper
+
+boton_play.grid(row=0, column=0, padx=10, pady=10)
+
+# Creamos un botón para el play
 boton_play= Button (panel_inferior, #Dónde anidamos el botón
                      text= 'Play', #Texto que pondrá en el botón
                      font=('Dosis', 14, 'bold'), #Fuente del texto del botón y tamaño de letra
@@ -177,13 +252,7 @@ boton_play= Button (panel_inferior, #Dónde anidamos el botón
                      pady=10,
                      command=aplicar_wallpapper) # Al presionar el botón se activará la función aplicar_wallpapper
 
-boton_play.grid(row=0, column=0)
-
-
-
-#nasa()
-
-
+boton_play.grid(row=0, column=1, padx=10, pady= 10)
    
 aplicacion.mainloop()
 
