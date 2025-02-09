@@ -42,10 +42,14 @@ def nasa():
     # y en la variable url la direccion de la foto
     if r.status_code == 200:
         results = r.json()
+        print(results)
         url = results["url"]
         global titulo, texto_pantalla
         titulo = results["title"]
-        autores = results["copyright"]
+        try:            #Como a veces las imágenes no llevan autor, colocamos una excepción.
+            autores = results["copyright"]
+        except:
+            autores = "Desconocido"
         explicacion = results["explanation"]
         texto_pantalla= (f"Título: {titulo}\nAutor: {autores} \n{explicacion}")
         
@@ -145,7 +149,7 @@ def aplicar_wallpapper():
 aplicacion = Tk()
 
 # Creamos la ventana, le damos medidas en px y posición de salida.
-aplicacion.geometry ('750x450+100+100')
+aplicacion.geometry ('750x750+100+100')
 
 # Con este comando impedimos que la ventana se pueda expandir o contraer por el usuario
 aplicacion.resizable (0,0)
