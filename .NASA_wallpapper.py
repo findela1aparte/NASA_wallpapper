@@ -59,14 +59,14 @@ def nasa():
             # La funcion with nos ayuda a abrir el archivo sin necesidad de cerrarlo
             # Hemos especificado que abrimos el archivo con nombre apod.jpg en la ruta elegida.
             # wb--> w es modo escritura y b modo binario, que se usa para imágenes
-            with open("/home/ignacio/fotos_NASA/apod.jpg", "wb") as f:
+            with open("/home/ignacio/fotos_NASA/apod_temp.jpg", "wb") as f:
                 f.write(requests.get(url).content) 
             # Creamos una variable obteniendo la fecha de la imágen de la API y le sumamos la extensión jpg
             fecha= results["date"] + (".jpg")
             # Creamos la variable ruta a la que enviaremos las imágenes para la bbdd sumando el directorio
             ruta_destino= Path("/home/ignacio/fotos_NASA").joinpath(fecha)
             # Aquí copiamos la imágen descargada en la carpeta especidicada cambiando de nombre.
-            shutil.copy("/home/ignacio/fotos_NASA/apod.jpg", ruta_destino)
+            shutil.copy("/home/ignacio/fotos_NASA/apod_temp.jpg", ruta_destino)
         # Si el archivo recibido es un vídeo (cosa que no creo que suceda) imprimiría la url en la terminal.
         else:
             
@@ -88,52 +88,52 @@ def nasa():
         print("No se pudo obtener la imagen.")
     
 
-def refrescar_contenido():
-    # Actualizamos el texto
+def refrescar_contenido(preview_temp=False):
     etiqueta_texto.config(text=texto_pantalla)
 
-    # Actualizamos la imagen
     global imagen_descargada
-    imagen_nueva = Image.open('/home/ignacio/fotos_NASA/apod.jpg')
-    imagen_redimensionada = imagen_nueva.resize((300, 200))  # Redimensionar la imagen
-    imagen_descargada = ImageTk.PhotoImage(imagen_redimensionada)  # Convertir la imagen redimensionada
-    prew_imagen.config(image=imagen_descargada)  #Actualizar el label que muestra la imágen
-    # Refrescar el texto de la etiqueta
+    img_path = "/home/ignacio/fotos_NASA/apod_temp.jpg" if preview_temp else "/home/ignacio/fotos_NASA/apod.jpg"
+    
+    imagen_nueva = Image.open(img_path)
+    imagen_redimensionada = imagen_nueva.resize((300, 200))  
+    imagen_descargada = ImageTk.PhotoImage(imagen_redimensionada)  
+    prew_imagen.config(image=imagen_descargada)
     
 def aleatoria():
     global texto_pantalla
     # Elegir una imagen aleatoria de la carpeta de la base de datos
-    aleatorio = os.listdir('/home/ignacio/fotos_NASA')  # Crea una lista con los archivos de la carpeta especificada
+    aleatorio = os.listdir('/home/ignacio/fotos_NASA')  
 
-    # Bucle para asegurarse de que la imagen elegida comience con '2'
-    foto_sustituta = random.choice(aleatorio)  # Elegimos una primera opción
-    while not foto_sustituta.startswith('2'):  # Repetimos mientras no empiece por '2'
-        foto_sustituta = random.choice(aleatorio)  # Elegimos otra imagen
+    # Asegurarse de que la imagen elegida comience con '2'
+    foto_sustituta = random.choice(aleatorio)
+    while not foto_sustituta.startswith('2'):  
+        foto_sustituta = random.choice(aleatorio)  
 
-    # Ahora que tenemos una imagen que cumple la condición, continuamos
-    origen = Path("/home/ignacio/fotos_NASA").joinpath(foto_sustituta)  # Crea una ruta con el archivo elegido
-    shutil.copy(origen, "/home/ignacio/fotos_NASA/apod.jpg")  # Copiamos la imagen elegida
-
-    #globals, dia, mes, anyo, diccionario_meses
-    # Extraer fecha del nombre del archivo (suponiendo que el nombre es YYYY-MM-DD.jpg)
-    fecha_completa = str(foto_sustituta)  # Convertimos a cadena
-    dia = fecha_completa[8:10]  # Extraemos el día
-    mes = str(fecha_completa[5:7])  # Extraemos el mes
-    anyo = fecha_completa[0:4]  # Extraemos el año
+    # Ruta de la imagen seleccionada
+    origen = Path("/home/ignacio/fotos_NASA").joinpath(foto_sustituta)
     
-    #Actualizar el texto para mostrar la fecha de la imágen aleatoria
-    texto_pantalla= f"La foto que te mostramos es del {dia} de {diccionario_meses[mes]} de {anyo}."
+    # Guardamos la imagen aleatoria en un archivo temporal para previsualizarla
+    shutil.copy(origen, "/home/ignacio/fotos_NASA/apod_temp.jpg")  
 
-    #Llamamos a la función refrescar que será la encargada de cambiar el texto y la imágen.
-    refrescar_contenido()
+    # Extraer la fecha del nombre del archivo
+    fecha_completa = str(foto_sustituta)
+    dia = fecha_completa[8:10]
+    mes = str(fecha_completa[5:7])
+    anyo = fecha_completa[0:4]
+
+    # Actualizar el texto con la nueva información
+    texto_pantalla = f"La foto que te mostramos es del {dia} de {diccionario_meses[mes]} de {anyo}."
+
+    # Refrescar la interfaz con la imagen temporal
+    refrescar_contenido(preview_temp=True)
+
 
 # Una vez descargada la imágen, esta sentencia le dice al SO que coloque como wallpaper el archivo indicado en la dirección de abajo
 # Este comando sólo sirve para Gnome, para otro entorno deberíamos buscar la manera de hacerlo.
 def aplicar_wallpapper():
-    #Copia la imágen desgargada y le cambia el nombre a apod2.jpg para evitar que la descarga cambie automáticamente el salvapantallas.
-    shutil.copy("/home/ignacio/fotos_NASA/apod.jpg","/home/ignacio/fotos_NASA/apod2.jpg")
-    os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio/fotos_NASA/apod2.jpg'")
-
+    # Solo en este momento se reemplaza `apod.jpg` con `apod_temp.jpg`
+    shutil.copy("/home/ignacio/fotos_NASA/apod_temp.jpg", "/home/ignacio/fotos_NASA/apod.jpg")
+    os.system("gsettings set org.gnome.desktop.background picture-uri 'file:///home/ignacio/fotos_NASA/apod.jpg'")
 
 
 
@@ -229,7 +229,7 @@ etiqueta_texto.pack(side=LEFT)# Alineación a la izquierda
 
 # Colocamos una previsualización de la imágen del día
 # Redimensionamos la imagen antes de convertirla a PhotoImage
-imagen = Image.open('/home/ignacio/fotos_NASA/apod.jpg')
+imagen = Image.open('/home/ignacio/fotos_NASA/apod_temp.jpg')
 imagen_redimensionada = imagen.resize((300, 200))  # Redimensionar la imagen
 imagen_descargada = ImageTk.PhotoImage(imagen_redimensionada)  # Convertir la imagen redimensionada
 prew_imagen = Label(panel_medio, image=imagen_descargada)
